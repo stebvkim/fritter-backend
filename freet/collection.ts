@@ -52,6 +52,121 @@ class FreetCollection {
   }
 
   /**
+   * Get all the freets in the database from the author on a certain date
+   *
+   * @return {Promise<HydratedDocument<Freet>[]>} - An array of all of the freets
+   */
+   static async findAllOnThisDate(username: string): Promise<Array<HydratedDocument<Freet>>> {
+    const author = await UserCollection.findOneByUsername(username);
+    const authorFreetArray = await FreetModel.find({authorId: author._id}).populate('authorId');
+    const onThisDayArray = [];
+    const date = new Date();
+    for (const freet of authorFreetArray)
+    {
+      const dateCreated = freet.dateCreated;
+      if (dateCreated.getDate() == date.getDate() && dateCreated.getMonth() == date.getMonth() && dateCreated.getFullYear() != date.getFullYear())
+      {
+        onThisDayArray.push(freet);
+      }
+    }
+    return onThisDayArray;
+  }
+
+  /**
+   * Get all the freets in the database that tag a certain user
+   *
+   * @return {Promise<HydratedDocument<Freet>[]>} - An array of all of the freets
+   */
+   static async findAllTag(username: string): Promise<Array<HydratedDocument<Freet>>> {
+    const freetArray = await FreetModel.find({}).sort({dateModified: -1}).populate('authorId');
+    const taggedUserArray = [];
+    for (const freet of freetArray)
+    {
+      const text = freet.content;
+      const tag = "@" + username + " ";
+      // this is a temporary fix for the @seok vs @seok1 example: currently works unless freet ends in the tag
+      // also currently shows self-freets -- get rid of these
+      // might want to think about being able to remove freets from important posts and insert them into normal feed?
+      if (text.includes(tag))
+      {
+        taggedUserArray.push(freet);
+      }
+    }
+    return taggedUserArray;
+  }
+
+  /**
+   * Get all of the seen freets for a certain user.
+   *
+   * @return {Promise<HydratedDocument<Freet>[]>} - An array of all of the freets
+   */
+   static async getSeenFreets(username: string): Promise<Array<HydratedDocument<Freet>>> {
+    const user = await UserCollection.findOneByUsername(username);
+    if (user) return user.seen; // might be a terrible idea because of aliasing?
+    return [];
+  }
+
+  /**
+   * Get all of the freets from freeters that the user follows.
+   *
+   * @return {Promise<HydratedDocument<Freet>[]>} - An array of all of the freets
+   */
+   static async getFollowingFreets(username: string): Promise<Array<HydratedDocument<Freet>>> {
+    const user = await UserCollection.findOneByUsername(username);
+    const followingFreets:Array<any> = []; // fix this lol
+    if (user)
+    {
+      for (const name of user.following)
+      {
+        const followFreet = await FreetModel.find({authorId: name._id}).populate('authorId');
+        followingFreets.push(followFreet);
+      }      
+    }
+    return followingFreets;
+  }
+
+    /**
+   * Get the shortened text for a freet.
+   *
+   * @return {Promise<string>} - A string of the freet's content.
+   */
+     static async shortenedFreet(freetId: Types.ObjectId | string): Promise<string> {
+      // maybe this shouldn't just return a string?
+      // this isn't implemented for the other files -- not a part of the concept I'm completing
+      const freet = await FreetModel.findOne({_id: freetId}).populate('authorId');
+      const content = freet.content;
+      if (content.length > 300) 
+      {
+        return content.slice(0, 300) + '...';
+      }
+      return content;
+    }
+
+  /**
+   * Get all of the freets that a user has seen
+   *
+   * @return {Promise<HydratedDocument<Freet>[]>} - An array of all of the seen freets
+   */
+   static async findAllSeen(username: string): Promise<Array<HydratedDocument<Freet>>> {
+    const freetArray = await FreetModel.find({}).sort({dateModified: -1}).populate('authorId');
+    const taggedUserArray = [];
+    for (const freet of freetArray)
+    {
+      const text = freet.content;
+      const tag = "@" + username + " ";
+      // this is a temporary fix for the @seok vs @seok1 example: currently works unless freet ends in the tag
+      // also currently shows self-freets -- get rid of these
+      // might want to think about being able to remove freets from important posts and insert them into normal feed?
+      if (text.includes(tag))
+      {
+        taggedUserArray.push(freet);
+      }
+    }
+    return taggedUserArray;
+  }
+
+
+  /**
    * Get all the freets in by given author
    *
    * @param {string} username - The username of author of the freets

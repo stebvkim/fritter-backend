@@ -192,6 +192,99 @@ This renders the `index.html` file that will be used to interact with the backen
 - `400` if `author` is not given
 - `404` if `author` is not a recognized username of any user
 
+#### `GET /api/freets/shortened?id=freetId` - Get a particular freet's shortened version
+
+**Returns**
+
+- A freet's first 300 characters
+
+**Throws**
+
+- `400` if `id` is not given
+- `404` if `id` is not the id for a real freet
+
+#### `GET /api/freets/date?author=USERNAME` - Get freets by author on the current date
+
+**Returns**
+
+- An array of freets created by user with username `author` on the current date
+
+**Throws**
+
+- `400` if `author` is not given is not given
+- `404` if `author` is not a recognized username of any user
+
+#### `GET /api/freets/important?user=USERNAME` - Get freets that tag 'user' in it
+
+**Returns**
+
+- An array of freets that tags 'user'
+
+**Throws**
+
+- `400` if `user` is not given
+- `404` if `user` is not a recognized username of any user
+
+#### `GET /api/freets/following?user=USERNAME` - Get freets from freeters that 'user' follows
+
+**Returns**
+
+- An array of freets from users that 'user' follows
+
+**Throws**
+
+- `400` if `user` is not given
+- `404` if `user` is not a recognized username of any user
+
+#### `GET /api/freets/seen?user=USERNAME` - Get freets that 'user' has seen
+
+**Returns**
+
+- An array of freets that 'user' has seen
+
+**Throws**
+
+- `400` if `user` is not given
+- `404` if `user` is not a recognized username of any user
+
+#### `GET /api/freets/reputation/?freet=freetId` - Get reputation change from a particular freet
+
+**Returns**
+
+- The total change in reputation from a freet's upvote count
+
+**Throws**
+
+- `400` if `freet` is not given
+- `404` if `freet` is not a valid freet
+
+#### `GET /api/freets/comments/?freet=freetId\?comment=commentId` - Get reputation change from a particular comment
+
+**Returns**
+
+- The total change in reputation from a comment's net upvote count
+
+**Throws**
+
+- `400` if `freet` or 'comment' is not given
+- `404` if `freet` is not a valid freet or if 'comment' is not a valid comment
+
+#### `PUT /api/freets/seen` - Add a freet that 'user' has seen to a list
+
+**Body**
+
+- `id` _{string}_ - The freet's id
+- `user` _{string}_ - The current user's username
+
+**Returns**
+
+- An array of freets that 'user' has seen
+
+**Throws**
+
+- `400` if `user` is not given
+- `404` if `user` is not a recognized username of any user
+
 #### `POST /api/freets` - Create a new freet
 
 **Body**
@@ -238,7 +331,31 @@ This renders the `index.html` file that will be used to interact with the backen
 - `404` if the freetId is invalid
 - `403` if the user is not the author of the freet
 - `400` if the new freet content is empty or a stream of empty spaces
-- `413` if the new freet content is more than 140 characters long
+- `413` if the new freet content is more than 500 characters long
+
+#### `PUT /api/freets/react/:freetId?` - Like or unlike an existing freet
+
+**Returns**
+
+- A success message
+- The new like count for the Freet
+
+**Throws**
+
+- `403` if the user is not logged in
+- `404` if the freetId is invalid
+
+#### `PUT /api/freets/react/:freetId?/:commentId?/:action?` - Like or unlike or dislike a comment on a freet
+
+**Returns**
+
+- A success message
+- The new net like count for the comment
+
+**Throws**
+
+- `403` if the user is not logged in
+- `404` if the freetId is invalid or if the commentId is invalid
 
 #### `POST /api/users/session` - Sign in user
 
@@ -292,6 +409,7 @@ This renders the `index.html` file that will be used to interact with the backen
 
 - `username` _{string}_ - The user's username
 - `password` _{string}_ - The user's password
+- `reputation` _{number}_ - The user's reputation score
 
 **Returns**
 
@@ -313,3 +431,76 @@ This renders the `index.html` file that will be used to interact with the backen
 **Throws**
 
 - `403` if the user is not logged in
+
+___
+
+#### `GET /api/users/followers?user=USERNAME` - Get list of people you're following
+
+**Returns**
+
+- An object with the people the user follows
+- A success message
+
+#### `PUT /api/users/followers` - Add user to following list
+
+**Body** _(no need to add fields that are not being changed)_
+
+- `username` _{string}_ - The (to-be-followed) user's username
+
+**Returns**
+
+- A success message
+
+**Throws**
+
+- `403` if the user is not logged in
+- `400` if the user does not exist
+- `409` if the user is already following that person
+
+#### `DELETE /api/users/followers/:userID?` - Removes user from following list
+
+**Returns**
+
+- A success message
+
+**Throws**
+
+- `403` if the user is not logged in
+- `400` if the user does not exist
+- `409` if the user is not following that person
+
+#### `POST /api/freets/:freetId?` - Add a comment to a freet
+
+**Body** 
+
+- `comment` _{comment}_ - The comment
+
+**Returns**
+
+- A success message
+
+**Throws**
+
+- `403` if the user is not logged in
+- `400` if the freet does not exist or the user doesn't have permission to view or comment on that freet
+
+#### `GET /api/freets/comments/freet=freetId` - Get the comments on a freet
+
+**Returns**
+
+- An array of comments for a freet 'freet'
+
+**Throws**
+
+- `400` if `freet` is not given
+- `404` if `freet` is not a valid freet
+
+#### `PUT /api/users/private` - Enter or exit NighthawkMode
+
+**Returns**
+
+- A success message
+
+**Throws**
+
+- `400` if the user is not logged in

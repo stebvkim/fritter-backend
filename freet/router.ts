@@ -49,6 +49,97 @@ router.get(
 );
 
 /**
+ * Get freets by author on today's date.
+ *
+ * @name GET /api/freets/date?authorId=id
+ *
+ * @return {FreetResponse[]} - An array of freets created by user with id, authorId
+ * @throws {400} - If authorId is not given
+ * @throws {404} - If no user has given authorId
+ *
+ */
+ router.get(
+  '/date',
+  [
+    userValidator.isAuthorExists
+  ],
+  async (req: Request, res: Response) => {
+    const authorFreetsOnThisDay = await FreetCollection.findAllOnThisDate(req.query.author as string);
+    const response = authorFreetsOnThisDay.map(util.constructFreetResponse);
+    res.status(200).json(response);
+  }
+);
+
+/**
+ * Get important freets for a user.
+ *
+ * @name GET /api/freets/important?user=USERNAME
+ *
+ * @return {FreetResponse[]} - An array of freets including the user's username
+ * @throws {400} - If authorId is not given
+ * @throws {404} - If no user has given authorId
+ *
+ */
+ router.get(
+  '/important',
+  [
+    // userValidator.doesUserExist // uncomment once it's fixed
+  ],
+  async (req: Request, res: Response) => {
+    const taggedFreets = await FreetCollection.findAllTag(req.query.user as string);
+    const response = taggedFreets.map(util.constructFreetResponse);
+    res.status(200).json(response);
+  }
+);
+
+/**
+ * Get seen freets for a user.
+ *
+ * @name GET /api/freets/seen?user=USERNAME
+ *
+ * @return {FreetResponse[]} - An array of freets that the user has seen
+ * @throws {400} - If authorId is not given
+ * @throws {404} - If no user has given authorId
+ *
+ */
+ router.get(
+  '/seen',
+  [
+    // userValidator.doesUserExist // uncomment once it's fixed
+  ],
+  async (req: Request, res: Response) => {
+
+    const seenFreets = await FreetCollection.getSeenFreets(req.query.user as string);
+    const response = seenFreets.map(util.constructFreetResponse);
+    res.status(200).json(response);
+  }
+);
+
+/**
+ * Get a user's following feed.
+ *
+ * @name GET /api/freets/following?user=USERNAME
+ *
+ * @return {FreetResponse[]} - An array of freets from other users that the user follows
+ * @throws {400} - If authorId is not given
+ * @throws {404} - If no user has given authorId
+ *
+ */
+ router.get(
+  '/following',
+  [
+    // userValidator.doesUserExist // uncomment once it's fixed
+  ],
+  async (req: Request, res: Response) => {
+
+    const followingFreets = await FreetCollection.getFollowingFreets(req.query.user as string);
+    const response = followingFreets.map(util.constructFreetResponse);
+    res.status(200).json(response);
+  }
+);
+
+
+/**
  * Create a new freet.
  *
  * @name POST /api/freets

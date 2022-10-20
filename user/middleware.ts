@@ -81,6 +81,29 @@ const isAccountExists = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
+// THIS FUNCTION DOESN'T WORK RIGHT NOW. FIX LATER. maybe change to be negation of isUsernameNotAlreadyInUse?
+/**
+ * Checks if a user with username and password in req.body exists
+ */
+ const doesUserExist = async (req: Request, res: Response, next: NextFunction) => {
+  const {username} = req.body as {username: string};
+
+  if (!username) {
+    res.status(400).json({error: `User doesn't exist.`});
+    return;
+  }
+
+  const user = await UserCollection.findOneByUsername(
+    username
+  );
+
+  if (user) {
+    next();
+  } else {
+    res.status(401).json({error: 'Nonexistent user.'});
+  }
+};
+
 /**
  * Checks if a username in req.body is already in use
  */
@@ -100,6 +123,7 @@ const isUsernameNotAlreadyInUse = async (req: Request, res: Response, next: Next
     }
   });
 };
+
 
 /**
  * Checks if the user is logged in, that is, whether the userId is set in session
@@ -161,5 +185,6 @@ export {
   isAccountExists,
   isAuthorExists,
   isValidUsername,
-  isValidPassword
+  isValidPassword,
+  doesUserExist
 };

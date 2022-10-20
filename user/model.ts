@@ -12,6 +12,8 @@ export type User = {
   username: string;
   password: string;
   dateJoined: Date;
+  following: Array<any>; // change Any to the proper type later
+  seen: Array<any>; // change Any to the proper type later
 };
 
 // Mongoose schema definition for interfacing with a MongoDB table
@@ -31,6 +33,16 @@ const UserSchema = new Schema({
   // The date the user joined
   dateJoined: {
     type: Date,
+    required: true
+  },
+  // The user's following list
+  following: {
+    type: Array,
+    required: true
+  },
+  // The user's seen posts
+  seen: {
+    type: Array,
     required: true
   }
 });

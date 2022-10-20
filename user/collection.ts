@@ -20,8 +20,9 @@ class UserCollection {
    */
   static async addOne(username: string, password: string): Promise<HydratedDocument<User>> {
     const dateJoined = new Date();
-
-    const user = new UserModel({username, password, dateJoined});
+    const seen:Array<any> = [];
+    const following:Array<any> = [];
+    const user = new UserModel({username, password, dateJoined, seen, following});
     await user.save(); // Saves user to MongoDB
     return user;
   }
@@ -44,6 +45,68 @@ class UserCollection {
    */
   static async findOneByUsername(username: string): Promise<HydratedDocument<User>> {
     return UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
+  }
+
+  // none of these have been added to other files. just keeping them here for future work.
+
+  /**
+   * Add a freet to the seen list.
+   *
+   * @param {string} username - The username of the user 
+   * @param {string} freetId - The freet to add to the seen list // is this even a string?
+   * @return {Promise<HydratedDocument<User>> | Promise<null>} - The user with the given username, if any
+   */
+   static async addToSeenList(username: string, freetId: Types.ObjectId | string): Promise<HydratedDocument<User>> {
+    const user =  await UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
+    if (user.seen.includes(freetId) == false) user.seen.push(freetId);
+    return user;
+  }
+
+  /**
+   * Remove a freet from the seen list.
+   *
+   * @param {string} username - The username of the user
+   * @param {string} freetId - The freet to remove from the seen list // is this even a string?
+   * @return {Promise<HydratedDocument<User>> | Promise<null>} - The user with the given username, if any
+   */
+   static async removeFromSeenList(username: string, freetId: Types.ObjectId | string): Promise<HydratedDocument<User>> {
+    const user =  await UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
+    if (user.seen.includes(freetId) == true) 
+    {
+      const ix = user.seen.indexOf(freetId);
+      user.seen.splice(ix, 1);
+    }
+    return user;
+  }
+
+  /**
+   * Add a freeter to the user's following list.
+   * 
+   * @param {string} username - The username of the user
+   * @param {string} toFollow - The username of the user to add to the following list
+   * @return {Promise<HydratedDocument<User>> | Promise<null>} - The user with the given username, if any
+   */
+   static async addToFollowList(username: string, toFollow: string): Promise<HydratedDocument<User>> {
+    const user =  await UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
+    if (user.following.includes(toFollow) == false) user.following.push(toFollow);
+    return user;
+  }
+
+  /**
+   * Add a freeter to the user's following list.
+   * 
+   * @param {string} username - The username of the user
+   * @param {string} toRemove - The username of the user to remove from the following list
+   * @return {Promise<HydratedDocument<User>> | Promise<null>} - The user with the given username, if any
+   */
+   static async removeFromFollowList(username: string, toRemove: string): Promise<HydratedDocument<User>> {
+    const user =  await UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
+    if (user.following.includes(toRemove) == true) 
+    {
+      const ix = user.following.indexOf(toRemove);
+      user.following.splice(ix, 1);
+    }
+    return user;
   }
 
   /**
