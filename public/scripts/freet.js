@@ -41,6 +41,12 @@ function viewFollowingFreets(fields) {
     .catch(showResponse);
 }
 
+function getShortenedPost(fields) {
+  fetch(`/api/freets/shortened?id=${fields.id}`)
+    .then(showResponse)
+    .catch(showResponse);
+}
+
 function createFreet(fields) {
   fetch('/api/freets', {method: 'POST', body: JSON.stringify(fields), headers: {'Content-Type': 'application/json'}})
     .then(showResponse)
@@ -55,6 +61,12 @@ function editFreet(fields) {
 
 function deleteFreet(fields) {
   fetch(`/api/freets/${fields.id}`, {method: 'DELETE'})
+    .then(showResponse)
+    .catch(showResponse);
+}
+
+function upvotePost(fields) {
+  fetch(`/api/freets/react/${fields.id}`, {method: 'PUT', body: JSON.stringify(fields), headers: {'Content-Type': 'application/json'}})
     .then(showResponse)
     .catch(showResponse);
 }

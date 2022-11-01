@@ -32,6 +32,7 @@ const formsAndHandlers = {
   'delete-user': deleteUser,
   'change-username': changeUsername,
   'change-password': changePassword,
+  'anon-toggle': nighthawkModeToggle,
   'sign-in': signIn,
   'sign-out': signOut,
   'view-all-freets': viewAllFreets,
@@ -40,9 +41,24 @@ const formsAndHandlers = {
   'view-important-freets': viewImportantFreets,
   'seen-freets-by-user': viewSeenFreets,
   'following-freets-for-user': viewFollowingFreets,
+  'get-shortened-post': getShortenedPost,
   'create-freet': createFreet,
   'edit-freet': editFreet,
-  'delete-freet': deleteFreet
+  'delete-freet': deleteFreet,
+  'add-follower':addFollower,
+  'remove-follower':removeFollower,
+  'add-seen-post':addSeenFreet,
+  'remove-seen-post':removeSeenFreet,
+  'change-reputation':changeReputation,
+  'upvote-post':upvotePost,
+  'view-all-comments':viewAllComments,
+  'view-comments-by-author':viewCommentsByAuthor,
+  'view-important-comments':viewImportantComments,
+  'upvote-comment':upvoteComment,
+  'create-comment':createComment,
+  'edit-comment': editComment,
+  'delete-comment': deleteComment,
+  'freet-comments':freetComments
 };
 
 // Attach handlers to forms

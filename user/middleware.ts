@@ -60,6 +60,22 @@ const isValidPassword = (req: Request, res: Response, next: NextFunction) => {
 };
 
 /**
+ * Checks if a reputation is a valid number.
+ */
+ const isValidNumber = (req: Request, res: Response, next: NextFunction) => {
+  if (isNaN(req.body.repChange) != false) {
+    res.status(404).json({
+      error: {
+        repChange: 'repChange must be a valid number.'
+      }
+    });
+    return;
+  }
+
+  next();
+};
+
+/**
  * Checks if a user with username and password in req.body exists
  */
 const isAccountExists = async (req: Request, res: Response, next: NextFunction) => {
@@ -186,5 +202,6 @@ export {
   isAuthorExists,
   isValidUsername,
   isValidPassword,
-  doesUserExist
+  doesUserExist,
+  isValidNumber
 };

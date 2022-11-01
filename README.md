@@ -175,13 +175,77 @@ The following api routes have already been implemented for you (**Make sure to d
 
 This renders the `index.html` file that will be used to interact with the backend
 
+## Freets
+___
+
 #### `GET /api/freets` - Get all the freets
 
 **Returns**
 
 - An array of all freets sorted in descending order by date modified
 
-#### `GET /api/freets?author=USERNAME` - Get freets by author
+#### `POST /api/freets` - Create a new freet
+
+**Body**
+
+- `content` _{string}_ - The content of the freet
+
+**Returns**
+
+- A success message
+- A object with the created freet
+
+**Throws**
+
+- `403` if the user is not logged in
+- `400` If the freet content is empty or a stream of empty spaces
+- `413` If the freet content is more than 140 characters long
+
+#### `DELETE /api/freets/:freetId?` - Delete an existing freet
+
+**Returns**
+
+- A success message
+
+**Throws**
+
+- `403` if the user is not logged in
+- `403` if the user is not the author of the freet
+- `404` if the freetId is invalid
+
+#### `PUT /api/freets/:freetId?` - Update an existing freet
+
+**Body**
+
+- `content` _{string}_ - The new content of the freet
+
+**Returns**
+
+- A success message
+- An object with the updated freet
+
+**Throws**
+
+- `403` if the user is not logged in
+- `404` if the freetId is invalid
+- `403` if the user is not the author of the freet
+- `400` if the new freet content is empty or a stream of empty spaces
+- `413` if the new freet content is more than 500 characters long
+
+#### `PUT /api/freets/react/:freetId?` - Like or unlike an existing freet
+
+**Returns**
+
+- A success message
+- The new like count for the Freet
+
+**Throws**
+
+- `403` if the user is not logged in
+- `404` if the freetId is invalid
+
+
+#### `GET /api/freets?authorId=id` - Get freets by author
 
 **Returns**
 
@@ -247,115 +311,8 @@ This renders the `index.html` file that will be used to interact with the backen
 - `400` if `user` is not given
 - `404` if `user` is not a recognized username of any user
 
-#### `GET /api/freets/reputation/?freet=freetId` - Get reputation change from a particular freet
-
-**Returns**
-
-- The total change in reputation from a freet's upvote count
-
-**Throws**
-
-- `400` if `freet` is not given
-- `404` if `freet` is not a valid freet
-
-#### `GET /api/freets/comments/?freet=freetId\?comment=commentId` - Get reputation change from a particular comment
-
-**Returns**
-
-- The total change in reputation from a comment's net upvote count
-
-**Throws**
-
-- `400` if `freet` or 'comment' is not given
-- `404` if `freet` is not a valid freet or if 'comment' is not a valid comment
-
-#### `PUT /api/freets/seen` - Add a freet that 'user' has seen to a list
-
-**Body**
-
-- `id` _{string}_ - The freet's id
-- `user` _{string}_ - The current user's username
-
-**Returns**
-
-- An array of freets that 'user' has seen
-
-**Throws**
-
-- `400` if `user` is not given
-- `404` if `user` is not a recognized username of any user
-
-#### `POST /api/freets` - Create a new freet
-
-**Body**
-
-- `content` _{string}_ - The content of the freet
-
-**Returns**
-
-- A success message
-- A object with the created freet
-
-**Throws**
-
-- `403` if the user is not logged in
-- `400` If the freet content is empty or a stream of empty spaces
-- `413` If the freet content is more than 140 characters long
-
-#### `DELETE /api/freets/:freetId?` - Delete an existing freet
-
-**Returns**
-
-- A success message
-
-**Throws**
-
-- `403` if the user is not logged in
-- `403` if the user is not the author of the freet
-- `404` if the freetId is invalid
-
-#### `PUT /api/freets/:freetId?` - Update an existing freet
-
-**Body**
-
-- `content` _{string}_ - The new content of the freet
-
-**Returns**
-
-- A success message
-- An object with the updated freet
-
-**Throws**
-
-- `403` if the user is not logged in
-- `404` if the freetId is invalid
-- `403` if the user is not the author of the freet
-- `400` if the new freet content is empty or a stream of empty spaces
-- `413` if the new freet content is more than 500 characters long
-
-#### `PUT /api/freets/react/:freetId?` - Like or unlike an existing freet
-
-**Returns**
-
-- A success message
-- The new like count for the Freet
-
-**Throws**
-
-- `403` if the user is not logged in
-- `404` if the freetId is invalid
-
-#### `PUT /api/freets/react/:freetId?/:commentId?/:action?` - Like or unlike or dislike a comment on a freet
-
-**Returns**
-
-- A success message
-- The new net like count for the comment
-
-**Throws**
-
-- `403` if the user is not logged in
-- `404` if the freetId is invalid or if the commentId is invalid
+## Users
+___
 
 #### `POST /api/users/session` - Sign in user
 
@@ -432,15 +389,6 @@ This renders the `index.html` file that will be used to interact with the backen
 
 - `403` if the user is not logged in
 
-___
-
-#### `GET /api/users/followers?user=USERNAME` - Get list of people you're following
-
-**Returns**
-
-- An object with the people the user follows
-- A success message
-
 #### `PUT /api/users/followers` - Add user to following list
 
 **Body** _(no need to add fields that are not being changed)_
@@ -469,7 +417,74 @@ ___
 - `400` if the user does not exist
 - `409` if the user is not following that person
 
-#### `POST /api/freets/:freetId?` - Add a comment to a freet
+#### `PUT /api/users/seen` - Add a freet that 'user' has seen to a list
+
+**Body**
+
+- `id` _{string}_ - The freet's id
+- `user` _{string}_ - The current user's username
+
+**Returns**
+
+- An array of freets that 'user' has seen
+
+**Throws**
+
+- `400` if `user` is not given
+- `404` if `user` is not a recognized username of any user
+
+#### `DELETE /api/users/seen/:freetID?` - Remove a freet that 'user' has seen to a list
+
+**Returns**
+
+- An array of freets that 'user' has seen
+
+**Throws**
+
+- `400` if `freetID` is not given
+- `404` if user is not logged in
+
+#### `PUT /api/users/anonymous` - Enter or exit NighthawkMode
+
+**Returns**
+
+- A success message
+
+**Throws**
+
+- `400` if the user is not logged in
+
+#### `PUT /api/users/reputation` - Change a user's reputation
+
+**Returns**
+
+- A success message
+
+**Throws**
+
+- `403` if the user does not exist
+
+## Comments
+___
+
+#### `GET /api/comments` - Get all the comments
+
+**Returns**
+
+- An array of all comments sorted in descending order by date modified
+
+#### `GET /api/comments?author=USERNAME` - Get comments by author
+
+**Returns**
+
+- An array of comments created by user with username `author`
+
+**Throws**
+
+- `400` if `author` is not given
+- `404` if `author` is not a recognized username of any user
+
+#### `POST /api/comments/:freetId?` - Add a comment to a freet
 
 **Body** 
 
@@ -482,9 +497,9 @@ ___
 **Throws**
 
 - `403` if the user is not logged in
-- `400` if the freet does not exist or the user doesn't have permission to view or comment on that freet
+- `400` if the comment does not exist or the user doesn't have permission to add a comment.
 
-#### `GET /api/freets/comments/freet=freetId` - Get the comments on a freet
+#### `GET /api/comments/freet=freetId` - Get the comments on a freet
 
 **Returns**
 
@@ -495,7 +510,36 @@ ___
 - `400` if `freet` is not given
 - `404` if `freet` is not a valid freet
 
-#### `PUT /api/users/private` - Enter or exit NighthawkMode
+#### `GET /api/comments/important?user=USERNAME` - Get comments that tag 'user' in it
+
+**Returns**
+
+- An array of comments that tags 'user'
+
+**Throws**
+
+- `400` if `user` is not given
+- `404` if `user` is not a recognized username of any user
+
+#### `POST /api/comments/:freetId?` - Create a new comment
+
+**Body**
+
+- `content` _{string}_ - The content of the comment
+
+**Returns**
+
+- A success message
+- A object with the created comment for the freet
+
+**Throws**
+
+- `403` if the user is not logged in
+- `400` If the comment content is empty or a stream of empty spaces
+- `404` If the freet does not exist.
+- `413` If the comment content is more than 5000 characters long
+
+#### `DELETE /api/comments/:commentId?` - Delete an existing comment
 
 **Returns**
 
@@ -503,4 +547,37 @@ ___
 
 **Throws**
 
-- `400` if the user is not logged in
+- `403` if the user is not logged in
+- `403` if the user is not the author of the comment
+- `404` if the commentId is invalid
+
+#### `PUT /api/comments/:commentId?` - Update an existing comment
+
+**Body**
+
+- `content` _{string}_ - The new content of the comment
+
+**Returns**
+
+- A success message
+- An object with the updated comment
+
+**Throws**
+
+- `403` if the user is not logged in
+- `404` if the commentId is invalid
+- `403` if the user is not the author of the comment
+- `400` if the new comment content is empty or a stream of empty spaces
+- `413` if the new comment content is more than 5000 characters long
+
+#### `PUT /api/comments/react/:commentId?/:action?` - Like or unlike an existing comment
+
+**Returns**
+
+- A success message
+- The new like count for the comment
+
+**Throws**
+
+- `403` if the user is not logged in
+- `404` if the commentId is invalid

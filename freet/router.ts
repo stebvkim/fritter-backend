@@ -4,6 +4,7 @@ import FreetCollection from './collection';
 import * as userValidator from '../user/middleware';
 import * as freetValidator from '../freet/middleware';
 import * as util from './util';
+import UserCollection from '../user/collection';
 
 const router = express.Router();
 
@@ -108,7 +109,6 @@ router.get(
     // userValidator.doesUserExist // uncomment once it's fixed
   ],
   async (req: Request, res: Response) => {
-
     const seenFreets = await FreetCollection.getSeenFreets(req.query.user as string);
     const response = seenFreets.map(util.constructFreetResponse);
     res.status(200).json(response);
@@ -219,6 +219,50 @@ router.put(
       message: 'Your freet was updated successfully.',
       freet: util.constructFreetResponse(freet)
     });
+  }
+);
+
+/**
+ * Get a shortened freet.
+ *
+ * @name GET /api/freets/shortened?id=freetId
+ *
+ * @return {string} - A string of the shortened freet.
+ * @throws {400} - If freetId is not given
+ * @throws {404} - If freetId is invalid
+ *
+ */
+ router.get(
+  '/shortened',
+  [
+    // freetValidator.isFreetExists,
+  ],
+  async (req: Request, res: Response) => {
+    const response = await FreetCollection.shortenedFreet(req.query.id as string);
+    res.status(200).json(response);
+  }
+);
+
+/**
+ * Upvote a freet.
+ *
+ * @name PUT /api/freets/react/:freetId?
+ *
+ * @return {string} - A success message.
+ * @throws {400} - If freetId is not given
+ * @throws {404} - If freetId is invalid
+ *
+ */
+ router.put(
+  '/react/:freetId?',
+  [
+    freetValidator.isFreetExists, // need to uncomment this
+  ],
+  async (req: Request, res: Response) => {
+    const userId = (req.session.userId as string) ?? ''; // Will not be an empty string since its validated in isUserLoggedIn
+    const user = await UserCollection.findOneByUserId(userId);
+    const response = await FreetCollection.upvotePost(user.username, req.params.freetId as string);
+    res.status(200).json(response);
   }
 );
 

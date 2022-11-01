@@ -1,6 +1,7 @@
 import type {HydratedDocument, Types} from 'mongoose';
 import type {User} from './model';
 import UserModel from './model';
+import FreetModel from '../freet/model';
 
 /**
  * This file contains a class with functionality to interact with users stored
@@ -22,7 +23,9 @@ class UserCollection {
     const dateJoined = new Date();
     const seen:Array<any> = [];
     const following:Array<any> = [];
-    const user = new UserModel({username, password, dateJoined, seen, following});
+    const anonName:string = 'Anonymous'
+    let reputation = 0;
+    const user = new UserModel({username, password, dateJoined, seen, following, anonName, reputation});
     await user.save(); // Saves user to MongoDB
     return user;
   }
@@ -36,7 +39,7 @@ class UserCollection {
   static async findOneByUserId(userId: Types.ObjectId | string): Promise<HydratedDocument<User>> {
     return UserModel.findOne({_id: userId});
   }
-
+  
   /**
    * Find a user by username (case insensitive).
    *
@@ -47,7 +50,23 @@ class UserCollection {
     return UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
   }
 
-  // none of these have been added to other files. just keeping them here for future work.
+
+  /**
+   * Modify a user's reputation.
+   *
+   * @param {string} userId - The userId of the user to find
+   * @return {Promise<HydratedDocument<User>> | Promise<null>} - The user with the updated reputation.
+   */
+   static async updateUserReputation(username: string, repChange: number): Promise<HydratedDocument<User>> {
+    const user = await this.findOneByUsername(username);
+    if (user && typeof(repChange) == 'number')
+    {
+      user.reputation += repChange;
+      await user.save();
+      return user;
+    }
+    return user;
+  }
 
   /**
    * Add a freet to the seen list.
@@ -57,9 +76,19 @@ class UserCollection {
    * @return {Promise<HydratedDocument<User>> | Promise<null>} - The user with the given username, if any
    */
    static async addToSeenList(username: string, freetId: Types.ObjectId | string): Promise<HydratedDocument<User>> {
-    const user =  await UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
-    if (user.seen.includes(freetId) == false) user.seen.push(freetId);
-    return user;
+    const user =  await UserModel.findOne({_id: username});
+    try { 
+      const seenFreet = await FreetModel.findOne({_id: freetId});
+      if (user.seen.includes(freetId) == false && seenFreet != null)
+      {
+        user.seen.push(freetId);
+      }
+      await user.save();
+      return user;
+    }
+    catch (error) { 
+      return user;
+    }
   }
 
   /**
@@ -70,12 +99,14 @@ class UserCollection {
    * @return {Promise<HydratedDocument<User>> | Promise<null>} - The user with the given username, if any
    */
    static async removeFromSeenList(username: string, freetId: Types.ObjectId | string): Promise<HydratedDocument<User>> {
-    const user =  await UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
-    if (user.seen.includes(freetId) == true) 
+    const user =  await UserModel.findOne({_id: username});
+    if (user.seen.includes(freetId)) 
     {
       const ix = user.seen.indexOf(freetId);
       user.seen.splice(ix, 1);
     }
+
+    await user.save();
     return user;
   }
 
@@ -87,25 +118,31 @@ class UserCollection {
    * @return {Promise<HydratedDocument<User>> | Promise<null>} - The user with the given username, if any
    */
    static async addToFollowList(username: string, toFollow: string): Promise<HydratedDocument<User>> {
-    const user =  await UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
-    if (user.following.includes(toFollow) == false) user.following.push(toFollow);
+
+    const user =  await UserModel.findOne({_id: username});
+    const follow =  await UserModel.findOne({username: new RegExp(`^${toFollow.trim()}$`, 'i')});
+    if (user.following.includes(toFollow) == false && follow != null) user.following.push(toFollow);
+
+    await user.save();
     return user;
   }
 
   /**
-   * Add a freeter to the user's following list.
+   * Remove from the user's following list.
    * 
    * @param {string} username - The username of the user
    * @param {string} toRemove - The username of the user to remove from the following list
    * @return {Promise<HydratedDocument<User>> | Promise<null>} - The user with the given username, if any
    */
    static async removeFromFollowList(username: string, toRemove: string): Promise<HydratedDocument<User>> {
-    const user =  await UserModel.findOne({username: new RegExp(`^${username.trim()}$`, 'i')});
-    if (user.following.includes(toRemove) == true) 
+    const user =  await UserModel.findOne({_id: username});
+    if (user.following.includes(toRemove)) 
     {
       const ix = user.following.indexOf(toRemove);
       user.following.splice(ix, 1);
     }
+
+    await user.save();
     return user;
   }
 
@@ -140,6 +177,41 @@ class UserCollection {
       user.username = userDetails.username as string;
     }
 
+    if (userDetails.anonOn) {
+      user.anonName = userDetails.username as string;
+      user.username = 'Anonymous';
+    }
+
+    if (userDetails.anonOff) {
+      user.username = userDetails.anonName as string;
+      user.anonName = 'Anonymous';
+    }
+
+    await user.save();
+    return user;
+  }
+
+  /**
+   * Toggle user's anonymous mode
+   *
+   * @param {string} userId - The userId of the user to update
+   * @param {Object} userDetails - An object with the user's updated credentials
+   * @return {Promise<HydratedDocument<User>>} - The updated user
+   */
+   static async updateAnon(userId: Types.ObjectId | string): Promise<HydratedDocument<User>> {
+    const user = await UserModel.findOne({_id: userId});
+
+    if (user.anonName == 'Anonymous')
+    {
+      user.anonName = user.username as string;
+      user.username = 'Anonymous';      
+    }
+
+    else
+    {
+      user.username = user.anonName as string;
+      user.anonName = 'Anonymous';
+    }
     await user.save();
     return user;
   }
